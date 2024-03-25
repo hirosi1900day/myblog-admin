@@ -14,8 +14,6 @@ services:
     # MySQLの環境変数設定（パスワード、ユーザー名など）
     environment:
       MYSQL_ROOT_PASSWORD: root_password_dev
-      MYSQL_USER: user_dev
-      MYSQL_PASSWORD: password_dev
       TZ: Asia/Tokyo
     # ホストのポート3306とコンテナのポート3306を紐づけ
     ports:
