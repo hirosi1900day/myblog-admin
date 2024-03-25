@@ -1,0 +1,66 @@
+# docker-composeのバージョン指定
+version: "3.8"
+
+# コンテナの定義開始
+services:
+  db:
+    # 使用するイメージを指定（MySQLのバージョン8.0）
+    image: mysql:8.0
+    # コンテナ名の設定
+    container_name: mysql-ctr-dev
+    # MySQLの認証方式を変更するためのコマンド
+    command: --default-authentication-plugin=mysql_native_password
+    # MySQLのデータを永続化するためのボリューム設定
+    volumes:
+      - db-data-dev:/var/lib/mysql
+    # MySQLの環境変数設定（パスワード、ユーザー名など）
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_dev
+      MYSQL_USER: user_dev
+      MYSQL_PASSWORD: password_dev
+      TZ: Asia/Tokyo
+    # ホストのポート3306とコンテナのポート3306を紐づけ
+    ports:
+      - "3306:3306"
+
+  api:
+    # Dockerfile.devを使用してイメージをビルド
+    build:
+      context: ./backend
+    # コード同期などのためのボリューム設定
+    volumes:
+      - ./backend:/rails
+    # ホストのポート3010とコンテナのポート3000を紐づけ
+    ports:
+      - "3000:3000"
+    # dbサービスへの依存関係を定義
+    depends_on:
+      - db
+    # コンテナの標準入力を開く
+    stdin_open: true
+    # コンテナにTTYを割り当て
+    tty: true
+
+  front:
+    # Dockerfile.devを使用してイメージをビルド
+    build:
+      context: ./frontend
+    # ビルドしたイメージの名前を指定
+    image: nextjs-img-dev
+    # コンテナ名の設定
+    container_name: nextjs-ctr-dev
+    # フロントエンドのコード同期のためのボリューム設定
+    volumes:
+      - ./frontend:/usr/src/front
+    # フロントエンドの起動コマンド
+    command: "npm run dev"
+    # ホストのポート3001とコンテナのポート3000を紐づけ
+    ports:
+      - "3001:3000"
+    # apiサービスへの依存関係を定義
+    depends_on:
+      - api
+
+# 名前付きボリュームの定義
+volumes:
+  db-data-dev:
