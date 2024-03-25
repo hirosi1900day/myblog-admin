@@ -7,5 +7,8 @@ set -e
 # Railsが生成するserver.pidファイルがあれば削除する
 rm -f /app/tmp/pids/server.pid
 
+rails db:create
+rails db:migrate
+
 # RailsのDockerfileのCMDで渡されたコマンドを実行
 exec "$@"
