@@ -15,7 +15,6 @@
 /backend/tmp/pids/*
 !/backend/tmp/pids/
 !/backend/tmp/pids/.keep
-/backend/node_modules
 
 # Ignore storage (uploaded files in development and any SQLite databases).
 /backend/storage/*
