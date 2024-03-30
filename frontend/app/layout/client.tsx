@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { AppProps } from 'next/app'; // Next.jsのAppProps型をインポート
 import { updateUser } from '../../lib/store/user'; // ユーザー情報を更新する updateUser 関数をインポート
 import Cookies from 'js-cookie';
 
