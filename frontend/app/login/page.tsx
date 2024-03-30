@@ -2,17 +2,24 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'
+import { RootState } from '../../lib/store';
 import { signIn } from '../../lib/api/auth';
 import { SignInParams } from '../../interfaces';
+import { useSelector } from 'react-redux';
 import { Button, TextField, Typography, Box } from '@mui/material';
+// reductのuserSliceをimportする
+import { updateUser } from '../../lib/store/user';
+import { useDispatch } from 'react-redux';
 import Cookies from "js-cookie"
 
 export default function Login() {
+  const user = useSelector((state: RootState) => state.user);
+  console.log(user);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-
+  const dispatch = useDispatch();
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -20,12 +27,16 @@ export default function Login() {
       email: email,
       password: password
     }
-    
+
     try {
       const response = await signIn(params);
       Cookies.set("_access_token", response.headers["access-token"]);
       Cookies.set("_client", response.headers["client"]);
       Cookies.set("_uid", response.headers["uid"]);
+      Cookies.set("_user_name", response.headers["name"]);
+      Cookies.set("_user_email", response.headers["email"]);
+
+      dispatch(updateUser(response.data.data));
       router.push("/");
     } catch (e: any) {
       setError(e.response.data.errors[0]);
@@ -45,9 +56,6 @@ export default function Login() {
           mx: 'auto' // 水平方向の中央揃え
         }}
       >
-        <Typography variant="h6" component="h2" gutterBottom>
-          ログイン
-        </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
             label="メールアドレス"
@@ -67,6 +75,7 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
           <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
             ログイン
           </Button>
