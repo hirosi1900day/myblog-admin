@@ -26,11 +26,9 @@ function ClientLayout({children}:  & {children: React.ReactNode}) {
   // JSX要素を返す
   return (
     <>
-      <div>テスト</div>
       {children}
     </>
-    )
-;
+  );
 }
 
 export default ClientLayout;
