@@ -21,7 +21,6 @@ export default function RootLayout({
       <body className={inter.className}>
         <StoreProvider>
           <ClientLayout>
-            <div>テストですううう！</div>
             {children} 
           </ClientLayout>
         </StoreProvider>

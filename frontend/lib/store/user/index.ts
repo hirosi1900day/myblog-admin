@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { type User } from '../../../interfaces'
+import { type User } from '../../../interfaces/user'
 
 export type UserState = {
   user: User
@@ -15,7 +15,6 @@ const initialState: UserState = {
 export const userSlice = createSlice({
   name: 'user',
   initialState,
-  // HACK: reducerは肥大化したらファイル分けたくなるかも
   reducers: {
     updateUser(state, action: PayloadAction<User>) {
       state.user = action.payload

@@ -6,8 +6,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "../lib/store";
 
 export default function Home() {
-  const user = useSelector((state: RootState) => state.user);
-  console.log('トップ', user);
   return (
     <main className={styles.main}>
       <div className={styles.description}>
