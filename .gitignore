@@ -1,31 +1,28 @@
 
-/backend/.bundle
-
-# Ignore all environment files (except templates).
-/backend/.env*
-!/backend/.env*.erb
+/bff/.bundle
+!/bff/.env*.erb
 
 # Ignore all logfiles and tempfiles.
-/backend/log/*
-/backend/tmp/*
-!/backend/log/.keep
-!/backend/tmp/.keep
+/bff/log/*
+/bff/tmp/*
+!/bff/log/.keep
+!/bff/tmp/.keep
 
 # Ignore pidfiles, but keep the directory.
-/backend/tmp/pids/*
-!/backend/tmp/pids/
-!/backend/tmp/pids/.keep
-/backend/node_modules
+/bff/tmp/pids/*
+!/bff/tmp/pids/
+!/bff/tmp/pids/.keep
+/bff/node_modules
 
 # Ignore storage (uploaded files in development and any SQLite databases).
-/backend/storage/*
-!/backend/storage/.keep
-/backend/tmp/storage/*
-!/backend/tmp/storage/
-!/backend/tmp/storage/.keep
+/bff/storage/*
+!/bff/storage/.keep
+/bff/tmp/storage/*
+!/bff/tmp/storage/
+!/bff/tmp/storage/.keep
 
 # Ignore master key for decrypting credentials and more.
-/backend/config/master.key
+/bff/config/master.key
 
 
 # frontend
@@ -54,12 +51,14 @@
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
 
-# local env files
-.env*.local
-
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+postgres-data
+pgadmin-data
+*.keep
+*.env*

@@ -19,13 +19,13 @@ services:
     ports:
       - "3306:3306"
 
-  api:
+  bff:
     # Dockerfile.devを使用してイメージをビルド
     build:
-      context: ./backend
+      context: ./bff
     # コード同期などのためのボリューム設定
     volumes:
-      - ./backend:/app
+      - ./bff:/app
     # ホストのポート3010とコンテナのポート3000を紐づけ
     ports:
       - "3000:3000"
@@ -58,7 +58,36 @@ services:
       - "3001:3000"
     # apiサービスへの依存関係を定義
     depends_on:
-      - api
+      - bff
+
+  pg:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres-data/init.d:/docker-entrypoint-initdb.d
+      - ./postgres-data/pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ginuser
+      POSTGRES_PASSWORD: ginpassword
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      POSTGRES_DB: fleamarket
+    hostname: postgres
+    restart: always
+    user: root
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 81:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: gin@example.com
+      PGADMIN_DEFAULT_PASSWORD: ginpassword
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - pg
 
 # 名前付きボリュームの定義
 volumes:
