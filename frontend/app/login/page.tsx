@@ -26,6 +26,7 @@ const Login: React.FC = () => {
   return (
     <>
       {error && <Typography color="error">{error}</Typography>}
+      <h1>ログイン</h1>
       <Box
         sx={{
           padding: 3,
