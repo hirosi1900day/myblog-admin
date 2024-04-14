@@ -27,3 +27,29 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+.bundle
+.env*.erb
+
+# Ignore all logfiles and tempfiles.
+log/*
+tmp/*
+log/.keep
+tmp/.keep
+
+# Ignore pidfiles, but keep the directory.
+tmp/pids/*
+tmp/pids/
+tmp/pids/.keep
+node_modules
+
+# Ignore storage (uploaded files in development and any SQLite databases).
+storage/*
+storage/.keep
+tmp/storage/*
+tmp/storage/
+tmp/storage/.keep
+
+# Ignore master key for decrypting credentials and more.
+/bff/config/master.key
+

@@ -1,0 +1,36 @@
+name: backend-test(golang)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: lint
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick golang_info
+        id: go
+        run: |
+            echo "version=$(grep golang .tool-versions | awk '{print $2}')" >> $GITHUB_OUTPUT
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.go.outputs.version }}
+      
+      - name: test
+        run: |
+          make test-with-cov
+
