@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "playwight": "playwight test",
+    "playwright": "playwright test",
     "playwright:ui": "playwright test --ui",
     "playwright:report": "playwright show-report",
     "test": "jest ./test",
