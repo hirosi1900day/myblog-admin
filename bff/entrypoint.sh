@@ -9,6 +9,7 @@ rm -f /app/tmp/pids/server.pid
 
 rails db:create
 rails db:migrate
+rails assets:precompile
 
 # RailsのDockerfileのCMDで渡されたコマンドを実行
 exec "$@"
