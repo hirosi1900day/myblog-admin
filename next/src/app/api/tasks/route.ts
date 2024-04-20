@@ -1,15 +1,11 @@
-import { TaskDocument, TaskModel } from '@/models/task';
-import { connectDb } from '@/utils/database';
 import { NextResponse } from 'next/server';
+import client from "../../../lib/api/client";
 
 export const GET = async () => {
   try {
-    await connectDb();
-    const allTasks: TaskDocument[] = await TaskModel.find();
-
-    return NextResponse.json({ message: 'タスク取得成功', tasks: allTasks });
-  } catch (error) {
-    console.log(error);
+    const { data: { items } } = await client.get('/items');
+    return NextResponse.json({ message: 'タスク取得成功', tasks: items });
+  } catch {
     return NextResponse.json({ message: 'タスク取得失敗' }, { status: 500 });
   }
 };

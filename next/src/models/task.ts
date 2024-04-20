@@ -3,8 +3,6 @@ import mongoose, { Document } from 'mongoose';
 export interface Task {
   title: string;
   description: string;
-  dueDate: string;
-  isCompleted: boolean;
 }
 
 export interface TaskDocument extends Task, Document {
@@ -20,14 +18,6 @@ const taskSchema = new mongoose.Schema<TaskDocument>(
     },
     description: {
       type: String,
-    },
-    dueDate: {
-      type: String,
-      required: true,
-    },
-    isCompleted: {
-      type: Boolean,
-      default: false,
     },
   },
   { timestamps: true }
