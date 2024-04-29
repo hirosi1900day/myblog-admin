@@ -18,6 +18,13 @@ gem "devise"
 gem "devise-i18n"
 gem "devise_token_auth"
 gem 'rack-cors'
+gem 'opentelemetry-sdk'
+gem 'opentelemetry-instrumentation-all'
+gem 'opentelemetry-instrumentation-rails'
+gem 'opentelemetry-instrumentation-mysql2'
+
+gem 'opentelemetry-exporter-zipkin'
+gem 'opentelemetry-exporter-jaeger'
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem "jbuilder"
