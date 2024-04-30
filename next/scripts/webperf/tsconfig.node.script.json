@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "outDir": "./dist/node",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "esModuleInterop": true,
+  },
+  "include": ["./*.ts"]
+}
