@@ -1,4 +1,5 @@
 import SideMenu from '@/components/SideMenu/SideMenu';
+import StoreProvider from "../../stores/StoreProvider.tsx";
 
 const MainLayout = ({
   children,
@@ -8,7 +9,9 @@ const MainLayout = ({
   return (
     <div className="flex h-screen">
       <SideMenu />
-      <main className="bg-slate-50 flex-1 overflow-auto">{children}</main>
+      <StoreProvider>
+        <main className="bg-slate-50 flex-1 overflow-auto">{children}</main>
+      </StoreProvider>
     </div>
   );
 };
