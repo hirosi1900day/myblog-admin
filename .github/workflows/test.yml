@@ -1,0 +1,19 @@
+name: backend-test(golang)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: test
+
+jobs:
+  job-1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sleep 20
