@@ -1,4 +1,4 @@
-name: backend-test(golang)
+name: test
 
 on:
   push:
@@ -16,4 +16,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
-        run: sleep 20
+        run: sleep 30
