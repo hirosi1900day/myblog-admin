@@ -1,6 +1,7 @@
 name: test2
 on:
   pull_request:
+  
 permissions:
   contents: write
   pull-requests: write
