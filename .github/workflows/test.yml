@@ -11,19 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Create index.html
-        run: |
-          mkdir -p .reg
-          echo '<!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Document</title>
-          </head>
-          <body>
-              <h1>Hello World</h1>
-          </body>
-          </html>' > .reg/index.html
+      run: |
+        mkdir -p .reg
+        echo '<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body>
+            <h1>Hello World</h1>
+        </body>
+        </html>' > .reg/index.html
     - name: Verify index.html
       run: cat .reg/index.html
     - name: deploy report to github page
