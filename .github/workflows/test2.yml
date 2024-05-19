@@ -30,7 +30,7 @@ jobs:
     - name: deploy report to github page artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: .reg/index.html
+        path: .reg
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v1
