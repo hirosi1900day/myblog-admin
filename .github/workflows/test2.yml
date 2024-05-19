@@ -1,4 +1,4 @@
-name: test
+name: test2
 on:
   push:
   pull_request:
@@ -27,17 +27,10 @@ jobs:
         </html>' > .reg/index.html
     - name: Verify index.html
       run: cat .reg/index.html
-    - name: deploy report to github page
-      uses: peaceiris/actions-gh-pages@v3
+    - name: deploy report to github page artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: .reg/
-        destination_dir: ${{ github.head_ref  }} # PR毎にディレクトリを分けることで上書きを防ぐ
-
-    - name: find comment
-      uses: peter-evans/find-comment@v2
-      id: fc
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        comment-author: 'github-actions[bot]'
-        body-includes: reg-suit report
+        path: .reg/index.html
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
