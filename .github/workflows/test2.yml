@@ -1,6 +1,5 @@
 name: test2
 on:
-  push:
   pull_request:
 permissions:
   contents: write
