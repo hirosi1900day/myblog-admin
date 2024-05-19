@@ -1,0 +1,32 @@
+name: Delete GitHub Pages Directory
+
+on:
+  delete:
+    branches:
+      - '**'
+
+jobs:
+  delete-gh-pages-directory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Delete directory in gh-pages branch
+        run: |
+          BRANCH_NAME=${{ github.event.ref }}
+          DIRECTORY_NAME=${BRANCH_NAME##*/}
+          git fetch origin gh-pages:gh-pages
+          git checkout gh-pages
+          if [ -d "$DIRECTORY_NAME" ]; then
+            rm -rf "$DIRECTORY_NAME"
+            git add .
+            git commit -m "Remove directory for branch $BRANCH_NAME"
+            git push origin gh-pages
+          fi
