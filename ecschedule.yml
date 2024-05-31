@@ -1,0 +1,20 @@
+region: ap-northeast-1
+cluster: cron
+aliases: &common_rule_attributes
+  role: stg-event-bridge
+  launch_type: FARGATE
+  network_configuration:
+    aws_vpc_configuration:
+      subnets:
+        - subnet-01300c9c8288244ac
+        - subnet-03c77ac3b988a7848
+        - subnet-0a2403918b28f0730
+      security_groups:
+        - sg-072c50c8ca649eda0
+      assign_public_ip: DISABLED
+rules:
+- name: test
+  scheduleExpression: cron(0 15 * * ? *)
+  taskDefinition: {{ env "TASK_DEF_ARN" "stg-clients-change-contract-plan" }}
+  <<: *common_rule_attributes
+  

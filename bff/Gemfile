@@ -65,5 +65,9 @@ group :development do
   # gem "spring"
 end
 
-
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'factory_bot'
+end
+gem 'annotate'
 gem "sprockets-rails", "~> 3.4"
