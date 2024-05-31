@@ -1,0 +1,58 @@
+name: test2
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+  pages: write
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Create index.html
+      run: |
+        mkdir -p .reg
+        echo '<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body>
+            <h1>Hello World3</h1>
+        </body>
+        </html>' > .reg/index.html
+    - name: Verify index.html
+      run: cat .reg/index.html
+    - name: Setup Pages
+      id: pages
+      uses: actions/configure-pages@v3
+    - name: Build with Jekyll
+      uses: actions/jekyll-build-pages@v1
+      with:
+        source: ./
+        destination: ./.reg
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: .reg
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
