@@ -68,6 +68,8 @@ jobs:
         continue-on-error: true
       - run: |
           export JOB_INDEX=${{ matrix.job_index }}
+          export JOB_COUNT=${{ toJson(matrix.node_index) }}
+          echo "JOB_COUNT: $JOB_COUNT"
           TEST_FILES=$(ruby split_tests.rb)
           if [ -z "$TEST_FILES" ]; then
             echo "No tests to run for this job."
