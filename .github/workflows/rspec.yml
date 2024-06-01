@@ -61,13 +61,8 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: 3.1.2
-      - uses: actions/download-artifact@v2
-        with:
-          name: test-report-tmp
-          path: report-tmp
-        # Use continue-on-error to run tests even if test-report is not uploaded
-        continue-on-error: true
       - run: |
+          ls
           TEST_FILES=$(ruby split_tests.rb $JOB_COUNT $JOB_INDEX)
           if [ -z "$TEST_FILES" ]; then
             echo "No tests to run for this job."
@@ -78,4 +73,3 @@ jobs:
         env:
           JOB_COUNTL: ${{ matrix.ci_node_total }}
           JOB_INDEX: ${{ matrix.ci_node_index }}
-        
