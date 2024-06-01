@@ -62,7 +62,7 @@ jobs:
           bundler-cache: true
           ruby-version: 3.1.2
       - run: |
-          ls
+          bundle install
           TEST_FILES=$(ruby split_tests.rb $JOB_COUNT $JOB_INDEX)
           if [ -z "$TEST_FILES" ]; then
             echo "No tests to run for this job."
