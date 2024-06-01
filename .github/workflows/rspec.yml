@@ -27,34 +27,7 @@ jobs:
         continue-on-error: true
       - uses: actions/upload-artifact@v2
         with:
-          name: test-rep
-  rspec:
-    runs-on: ubuntu-latest
-    working-directory: bff
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost"
-          --health-interval 20s
-          --health-timeout 10s
-          --health-retries 10
-        ports:
-          - 3306:3306
-
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli -h localhost ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 15
-        ports:
-          - 6379:6379
+          name: test-report-tmp
 
   test:
     needs: download-test-report
