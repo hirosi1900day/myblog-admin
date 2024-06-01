@@ -35,7 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node_index: [0, 1, 2]
+        ci_node_total: [10]
+        ci_node_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     defaults:
       run:
         working-directory: bff
@@ -67,10 +68,6 @@ jobs:
         # Use continue-on-error to run tests even if test-report is not uploaded
         continue-on-error: true
       - run: |
-          export JOB_INDEX=${{ toJson(matrix.node_index) }}
-          export JOB_COUNT=${{ matrix.node_index | length }}
-          echo "JOB_COUNT: $JOB_COUNT"
-          echo "JOB_INDEX: $JOB_INDEX"
           TEST_FILES=$(ruby split_tests.rb)
           if [ -z "$TEST_FILES" ]; then
             echo "No tests to run for this job."
@@ -78,4 +75,7 @@ jobs:
             echo "Running tests: $TEST_FILES"
             bundle exec rspec $TEST_FILES
           fi
+        env:
+          JOB_COUNTL: ${{ matrix.ci_node_total }}
+          JOB_INDEX: ${{ matrix.ci_node_index }}
         
