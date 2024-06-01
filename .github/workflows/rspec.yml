@@ -1,0 +1,102 @@
+name: rspec
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  download-test-report:
+    runs-on: ubuntu-latest
+    steps:
+      # Use dawidd6/action-download-artifact to download JUnit Format XML test report from another branch
+      # https://github.com/actions/download-artifact/issues/3
+      - uses: dawidd6/action-download-artifact@v2
+        with:
+          branch: main
+          name: test-report
+          workflow: ci.yml
+          path: report
+        # Use continue-on-error to run tests even if test-report is not uploaded
+        continue-on-error: true
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-rep
+  rspec:
+    runs-on: ubuntu-latest
+    working-directory: bff
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 10
+        ports:
+          - 3306:3306
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli -h localhost ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+        ports:
+          - 6379:6379
+
+  test:
+    needs: download-test-report
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_index: [0, 1, 2]
+    working-directory: bff
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 10
+        ports:
+          - 3306:3306
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: 3.1.2
+      - uses: actions/download-artifact@v2
+        with:
+          name: test-report-tmp
+          path: report-tmp
+        # Use continue-on-error to run tests even if test-report is not uploaded
+        continue-on-error: true
+      - run: |
+          curl -L --output split-test https://github.com/mtsmfm/split-test/releases/download/v0.3.0/split-test-x86_64-unknown-linux-gnu
+          chmod +x split-test
+      - run: bin/rspec --format progress --format RspecJunitFormatter --out report/rspec-${{ matrix.node_index }}.xml $(./split-test --junit-xml-report-dir report-tmp --node-index ${{ matrix.node_index }} --node-total 3 --tests-glob 'spec/**/*_spec.rb' --debug)
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-report
+          path: report
+          if-no-files-found: error
+        
