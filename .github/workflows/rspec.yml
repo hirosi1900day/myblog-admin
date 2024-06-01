@@ -67,9 +67,10 @@ jobs:
         # Use continue-on-error to run tests even if test-report is not uploaded
         continue-on-error: true
       - run: |
-          export JOB_INDEX=${{ matrix.job_index }}
-          export JOB_COUNT=${{ toJson(matrix.node_index) }}
+          export JOB_INDEX=${{ toJson(matrix.node_index) }}
+          export JOB_COUNT=${{ matrix.node_index | length }}
           echo "JOB_COUNT: $JOB_COUNT"
+          echo "JOB_INDEX: $JOB_INDEX"
           TEST_FILES=$(ruby split_tests.rb)
           if [ -z "$TEST_FILES" ]; then
             echo "No tests to run for this job."
