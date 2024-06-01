@@ -68,7 +68,7 @@ jobs:
         # Use continue-on-error to run tests even if test-report is not uploaded
         continue-on-error: true
       - run: |
-          TEST_FILES=$(ruby split_tests.rb)
+          TEST_FILES=$(ruby split_tests.rb $JOB_COUNT $JOB_INDEX)
           if [ -z "$TEST_FILES" ]; then
             echo "No tests to run for this job."
           else

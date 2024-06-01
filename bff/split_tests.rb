@@ -1,7 +1,7 @@
 # split_tests.rb
 all_tests = Dir["spec/**/*_spec.rb"]
-job_count = ENV["JOB_COUNT"].to_i
-job_index = ENV["JOB_INDEX"].to_i
+job_count = ARGV[0].to_i
+job_index = ARGV[1].to_i
 
 puts all_tests
 puts job_count
