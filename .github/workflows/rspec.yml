@@ -35,7 +35,9 @@ jobs:
     strategy:
       matrix:
         node_index: [0, 1, 2]
-    working-directory: bff
+    defaults:
+      run:
+        working-directory: bff
 
     services:
       mysql:
