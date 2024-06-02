@@ -61,7 +61,7 @@ jobs:
       - name: Download test report
         uses: dawidd6/action-download-artifact@v2
         with:
-          branch: test
+          branch: test4
           name: test-report
           path: report
         continue-on-error: true
