@@ -15,6 +15,9 @@ permissions:
 jobs:
   rspec:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./bff
     strategy:
       matrix:
         parallelism: [2]
