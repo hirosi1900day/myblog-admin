@@ -55,11 +55,11 @@ jobs:
           ruby-version: 3.1.2
           bundler-cache: true
 
-      - name: Run Elasticsearch
-        uses: elastic/elastic-github-actions/elasticsearch@master
-        with:
-          stack-version: 7.13.3
-          plugins: analysis-kuromoji
+      # - name: Run Elasticsearch
+      #   uses: elastic/elastic-github-actions/elasticsearch@master
+      #   with:
+      #     stack-version: 7.13.3
+      #     plugins: analysis-kuromoji
 
       - name: Download test report
         uses: dawidd6/action-download-artifact@v2
