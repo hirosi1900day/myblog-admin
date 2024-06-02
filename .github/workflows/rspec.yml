@@ -1,7 +1,7 @@
 name: rspec
 
 on:
-  push:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
@@ -10,66 +10,136 @@ concurrency:
 permissions:
   contents: read
   pull-requests: write
+  actions: write
 
 jobs:
-  download-test-report:
-    runs-on: ubuntu-latest
-    steps:
-      # Use dawidd6/action-download-artifact to download JUnit Format XML test report from another branch
-      # https://github.com/actions/download-artifact/issues/3
-      - uses: dawidd6/action-download-artifact@v2
-        with:
-          branch: main
-          name: test-report
-          workflow: ci.yml
-          path: report
-        # Use continue-on-error to run tests even if test-report is not uploaded
-        continue-on-error: true
-      - uses: actions/upload-artifact@v2
-        with:
-          name: test-report-tmp
-          path: report
-
-  test:
-    needs: download-test-report
+  rspec:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ci_node_total: [10]
-        ci_node_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    defaults:
-      run:
-        working-directory: bff
+        parallelism: [2]
+        id: [0, 1]
 
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test
+          MYSQL_DATABASE: ava_test
         options: >-
           --health-cmd "mysqladmin ping -h localhost"
-          --health-interval 20s
-          --health-timeout 10s
-          --health-retries 10
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 3306:3306
 
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli -h localhost ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+        ports:
+          - 6379:6379
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - uses: ruby/setup-ruby@v1
         with:
-          bundler-cache: true
           ruby-version: 3.1.2
+          bundler-cache: true
+
+      - name: Run Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 7.13.3
+          plugins: analysis-kuromoji
+
+      - name: Download test report
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          branch: test
+          name: test-report
+          path: report
+        continue-on-error: true
+
       - run: |
-          bundle install
-          TEST_FILES=$(ruby split_tests.rb $JOB_COUNT $JOB_INDEX)
-          if [ -z "$TEST_FILES" ]; then
-            echo "No tests to run for this job."
-          else
-            echo "Running tests: $TEST_FILES"
-            bundle exec rspec $TEST_FILES
-          fi
+          curl -L --output split-test https://github.com/mtsmfm/split-test/releases/download/v1.0.0/split-test-x86_64-unknown-linux-gnu
+          chmod +x split-test
+
+      - run: |
+          PATHS=$(./split-test --junit-xml-report-dir report-tmp --node-index "${{ matrix.id }}" --node-total "${{ matrix.parallelism }}" --tests-glob "spec/**/*_spec.rb" | sed "s;^$(pwd)/;;" | tr '\n' ' ')
+          echo "paths=${PATHS}"
+
+      - name: Rspec
         env:
-          JOB_COUNTL: ${{ matrix.ci_node_total }}
-          JOB_INDEX: ${{ matrix.ci_node_index }}
+          RAILS_ENV: test
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_USERNAME: root
+          MYSQL_PASSWORD: root
+          REDIS_URL: redis://127.0.0.1:6379
+          TEST_ELASTICSEARCH_URL: http://127.0.0.1:9200
+        run: |
+          bin/rails db:create
+          bin/rails db:migrate
+          bundle exec rspec \
+          --format progress \
+          --format RspecJunitFormatter \
+          --out report/rspec-${{ matrix.id }}.xml \
+          -f j -o tmp/rspec_results.json -f p \
+          $(./split-test --junit-xml-report-dir report-tmp --node-index ${{ matrix.id }} --node-total ${{ matrix.parallelism }} --tests-glob 'spec/**/*_spec.rb' --debug)
+
+      - run: cat tmp/rspec_results.json
+        if: always()
+      # https://github.com/marketplace/actions/rspec-report
+      # - name: RSpec Report
+      #   if: always()
+      #   uses: SonicGarden/rspec-report-action@v1
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     json-path: tmp/rspec_results.json
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-report
+          path: report
+          if-no-files-found: error
+        # if: github.ref == 'refs/heads/main'
+      
+      - name: Upload RSpec results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: rspec-results-${{ github.sha }}-${{ matrix.id }}
+          path: tmp/rspec_results_${{ matrix.id }}.json
+
+  merge-results:
+    needs: rspec
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download RSpec results
+        uses: actions/download-artifact@v2
+        with:
+          name: rspec-results-${{ github.sha }}-0
+          path: tmp/
+      - name: Download RSpec results
+        uses: actions/download-artifact@v2
+        with:
+          name: rspec-results-${{ github.sha }}-1
+          path: tmp/
+
+      - name: Merge RSpec results
+        run: |
+          jq -s '[.[][]]' tmp/rspec_results_0.json tmp/rspec_results_1.json > tmp/rspec_results_merged.json
+
+      - name: RSpec Report
+        uses: SonicGarden/rspec-report-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          json-path: tmp/rspec_results_merged.json
