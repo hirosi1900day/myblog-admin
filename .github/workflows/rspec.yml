@@ -1,0 +1,148 @@
+name: rspec
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+
+jobs:
+  rspec:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./bff
+    strategy:
+      matrix:
+        parallelism: [2]
+        id: [0, 1]
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ava_test
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 3306:3306
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli -h localhost ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1.2
+          bundler-cache: true
+
+      # - name: Run Elasticsearch
+      #   uses: elastic/elastic-github-actions/elasticsearch@master
+      #   with:
+      #     stack-version: 7.13.3
+      #     plugins: analysis-kuromoji
+
+      - name: Download test report
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          branch: test4
+          name: test-report
+          path: report
+        continue-on-error: true
+
+      - run: |
+          curl -L --output split-test https://github.com/mtsmfm/split-test/releases/download/v1.0.0/split-test-x86_64-unknown-linux-gnu
+          chmod +x split-test
+
+      - run: |
+          PATHS=$(./split-test --junit-xml-report-dir report-tmp --node-index "${{ matrix.id }}" --node-total "${{ matrix.parallelism }}" --tests-glob "spec/**/*_spec.rb" | sed "s;^$(pwd)/;;" | tr '\n' ' ')
+          echo "paths=${PATHS}"
+
+      - name: Rspec
+        env:
+          RAILS_ENV: test
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_USERNAME: root
+          MYSQL_PASSWORD: root
+          REDIS_URL: redis://127.0.0.1:6379
+          TEST_ELASTICSEARCH_URL: http://127.0.0.1:9200
+        run: |
+          bin/rails db:create
+          bin/rails db:migrate
+          bundle exec rspec \
+          --format progress \
+          --format RspecJunitFormatter \
+          --out report/rspec-${{ matrix.id }}.xml \
+          -f j -o tmp/rspec_results.json -f p \
+          $(./split-test --junit-xml-report-dir report-tmp --node-index ${{ matrix.id }} --node-total ${{ matrix.parallelism }} --tests-glob 'spec/**/*_spec.rb' --debug)
+
+      - run: cat tmp/rspec_results.json
+        if: always()
+      # https://github.com/marketplace/actions/rspec-report
+      # - name: RSpec Report
+      #   if: always()
+      #   uses: SonicGarden/rspec-report-action@v1
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     json-path: tmp/rspec_results.json
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-report
+          path: report
+          if-no-files-found: error
+        # if: github.ref == 'refs/heads/main'
+      
+      - name: Upload RSpec results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: rspec-results-${{ github.sha }}-${{ matrix.id }}
+          path: tmp/rspec_results_${{ matrix.id }}.json
+
+  merge-results:
+    needs: rspec
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download RSpec results
+        uses: actions/download-artifact@v2
+        with:
+          name: rspec-results-${{ github.sha }}-0
+          path: tmp/
+      - name: Download RSpec results
+        uses: actions/download-artifact@v2
+        with:
+          name: rspec-results-${{ github.sha }}-1
+          path: tmp/
+
+      - name: Merge RSpec results
+        run: |
+          jq -s '[.[][]]' tmp/rspec_results_0.json tmp/rspec_results_1.json > tmp/rspec_results_merged.json
+
+      - name: RSpec Report
+        uses: SonicGarden/rspec-report-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          json-path: tmp/rspec_results_merged.json
